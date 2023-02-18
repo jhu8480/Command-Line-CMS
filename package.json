@@ -1,0 +1,16 @@
+{
+  "name": "command-line-cms",
+  "version": "1.0.0",
+  "description": "command-line-cms",
+  "main": "app.js",
+  "scripts": {
+    "start":"node app"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "mysql"
+  ],
+  "author": "Jinhui Hu",
+  "license": "MIT"
+}
