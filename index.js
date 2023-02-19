@@ -21,7 +21,7 @@ const firstQuestion = [
     type: 'list',
     message: 'What would you like to do?',
     name: 'todo',
-    choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
+    choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add a Department', 'Add a Role', 'Add an Employee', 'Update Employee Role', 'Quit']
   }
 ];
 
@@ -38,29 +38,33 @@ function initCMS() {
   const prompt = inquirer.createPromptModule();
   prompt(firstQuestion)
     .then(({todo}) => {
-      if ( todo === 'View All Employees') {
-        viewAllEmployees();
-      } else if (todo === 'View All Departments') {
-        viewAllDepartments();
-      } else if (todo === 'Quit') {
-        console.log('---------------------Bye bye 👋 See you soon!---------------');
+      if ( todo === 'View All Employees' || todo === 'View All Roles' || todo === 'View All Departments') {
+        const choice = todo === 'View All Departments' ? 'department' : todo === 'View All Roles' ? 'roles' : 'employee';
+        viewAll(choice);
+      } 
+      else if (todo === 'Add a Department') {
+        addDepartment();
+      }
+      else if (todo === 'Quit') {
+        console.log('\n\n\n---------------------Bye bye 👋 See you soon!---------------\n\n\n');
         process.exit(1);
       }
     });
 }
 
-async function viewAllEmployees() {
-  const queryString = 'SELECT * FROM employee';
-  const data = await db.query(queryString);
-  console.log(`\n\n-----------------------`);
-  console.log(cTable.getTable(data[0]));
-  initCMS();
+async function viewAll(table) {
+  try {
+    const queryString = `SELECT * FROM ${table}`;
+    const data = await db.query(queryString);
+    console.log(`\n\n-----------------------\n\n`);
+    console.log(cTable.getTable(data[0]));
+  } catch(e) {
+    console.error(e);
+  } finally {
+    initCMS();
+  }
 }
 
-async function viewAllDepartments() {
-  const queryString = 'SELECT * FROM department';
-  const data = await db.query(queryString);
-  console.log(`\n\n-----------------------`);
-  console.log(cTable.getTable(data[0]));
-  initCMS();
+async function addDepartment() {
+  
 }
