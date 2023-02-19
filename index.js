@@ -93,6 +93,7 @@ async function addDepartment() {
       const queryString = `INSERT INTO department(department_name) VALUES(?)`;
       const response = await db.query(queryString, department);
       console.log(response);
+      console.log(`\n\n----------New Department Added-------------\n\n`);
     } catch(e) {
       console.error(e);
       process.exit(1);
@@ -123,8 +124,21 @@ async function addRole() {
     }, {
       type: 'list',
       message: 'Please pick the department the new role belongs to',
-      name: 'department'
+      name: 'department',
+      choices: allDepartments
     }
-  ])
-
+  ]).then(async ({role: roleName, salary, department}) => {
+    try {
+      const getDepartmentId = await db.query(`SELECT department_id FROM department WHERE department_name = ?`, department);
+      const queryString = 'INSERT INTO roles(title, salary, department_id) VALUES (?, ?, ?)';
+      const response = await db.query(queryString, [roleName, salary, getDepartmentId[0].department_id]);
+      console.log(response);
+      console.log(`\n\n---------New Role Added!--------------\n\n`);
+    } catch(e) {
+      console.error(e);
+      process.exit(1);
+    } finally {
+      initCMS();
+    }
+  })
 }
