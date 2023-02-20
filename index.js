@@ -51,6 +51,9 @@ function initCMS() {
       else if (todo === 'Add an Employee') {
         addEmployee();
       }
+      else if (todo === 'Update Employee Role') {
+        updateEmployeeRole();
+      }
       else if (todo === 'Quit') {
         console.log('\n\n\n---------------------Bye bye 👋 See you soon!---------------\n\n\n');
         process.exit(1);
@@ -147,13 +150,12 @@ async function addRole() {
 }
 
 async function addEmployee() {
-  const getAllRoles = 'SELECT title FROM roles';
+  const getAllRoles = 'SELECT * FROM roles';
   const rolesObjArr = await db.query(getAllRoles);
   const allRoles = [];
   for (let i = 0; i < rolesObjArr[0].length; i++) {
-    allRoles.push(rolesObjArr[0][i]);
+    allRoles.push(rolesObjArr[0][i].title);
   }
-  console.log(allRoles);
 
   const getAllManagers = `SELECT DISTINCT CONCAT(m.first_name, ' ', m.last_name) AS manager_name, m.employee_id FROM employee e JOIN employee m ON e.manager_id = m.employee_id`;
   const managersObjArr = await db.query(getAllManagers);
@@ -163,8 +165,6 @@ async function addEmployee() {
     allManagers.push(managersObjArr[0][i]);
     managerNameList.push(managersObjArr[0][i].manager_name);
   }
-  console.log(allManagers);
-  console.log(managerNameList);
 
   inquirer.prompt([
     {
@@ -190,7 +190,30 @@ async function addEmployee() {
       choices: managerNameList
     }    
   ]).then(async ({firstName, lastName, employeeRole, employeeManager}) => {
-      
+      try {
+        let roleId;
+      for (let i = 0; i < rolesObjArr[0].length; i++) {
+        if (employeeRole === rolesObjArr[0][i].title) {
+          roleId = rolesObjArr[0][i].role_id;
+        }
+      }
+      let managerId;
+      for (let i =0; i < managersObjArr[0].length; i++) {
+        if (employeeManager === managersObjArr[0][i].manager_name) {
+          managerId = managersObjArr[0][i].employee_id;
+        }
+      }
+
       const queryString = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+      const response = db.query(queryString, [firstName, lastName, roleId, managerId]);
+      console.log(response);
+      console.log(`\n\n---------New Employee Added!--------------\n\n`);
+      } catch(e) {
+        console.error(e);
+        process.exit(1);
+      } finally {
+        initCMS();
+      }
   });
 }
+
