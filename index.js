@@ -1,6 +1,6 @@
 
 const inquirer = require('inquirer');
-const cTable = require('console.table'); // console.log(cTable.getTable([]))
+const cTable = require('console.table');
 
 const mysql = require('mysql2');
 const db = require('mysql-promise')();
@@ -47,6 +47,9 @@ function initCMS() {
       }
       else if (todo === 'Add a Role') {
         addRole();
+      }
+      else if (todo === 'Add an Employee') {
+        addEmployee();
       }
       else if (todo === 'Quit') {
         console.log('\n\n\n---------------------Bye bye 👋 See you soon!---------------\n\n\n');
@@ -141,4 +144,53 @@ async function addRole() {
       initCMS();
     }
   })
+}
+
+async function addEmployee() {
+  const getAllRoles = 'SELECT title FROM roles';
+  const rolesObjArr = await db.query(getAllRoles);
+  const allRoles = [];
+  for (let i = 0; i < rolesObjArr[0].length; i++) {
+    allRoles.push(rolesObjArr[0][i]);
+  }
+  console.log(allRoles);
+
+  const getAllManagers = `SELECT DISTINCT CONCAT(m.first_name, ' ', m.last_name) AS manager_name, m.employee_id FROM employee e JOIN employee m ON e.manager_id = m.employee_id`;
+  const managersObjArr = await db.query(getAllManagers);
+  const allManagers = [];
+  const managerNameList = [];
+  for (let i = 0; i < managersObjArr[0].length; i++) {
+    allManagers.push(managersObjArr[0][i]);
+    managerNameList.push(managersObjArr[0][i].manager_name);
+  }
+  console.log(allManagers);
+  console.log(managerNameList);
+
+  inquirer.prompt([
+    {
+      type: 'input',
+      message: `What is the employee's first name?`,
+      name: 'firstName'
+    },
+    {
+      type: 'input',
+      message: `What is the employee's last name?`,
+      name: 'lastName'
+    },
+    {
+      type: 'list',
+      message: `What is the employee's role?`,
+      name: 'employeeRole',
+      choices: allRoles
+    },
+    {
+      type: 'list',
+      message: `Who is the employee's manager?`,
+      name: 'employeeManager',
+      choices: managerNameList
+    }    
+  ]).then(async ({firstName, lastName, employeeRole, employeeManager}) => {
+      
+      const queryString = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+  });
 }
