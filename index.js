@@ -28,7 +28,7 @@ const firstQuestion = [
 console.log('-------------------------------------------------');
 console.log('--------------COMMAND LINE CMS-------------------');
 console.log('---------------VERSION: 1.0.0--------------------');
-console.log('-------------CREATED BY: jhu8480-----------------');
+console.log('-------------CREATED BY: jhu8480🫰---------------');
 console.log('-------------------------------------------------');
 
 initCMS();
@@ -99,7 +99,7 @@ async function addDepartment() {
       const queryString = `INSERT INTO department(department_name) VALUES(?)`;
       const response = await db.query(queryString, department);
       console.log(response);
-      console.log(`\n\n----------New Department Added-------------\n\n`);
+      console.log(`\n\n----------New Department ${department} Added-------------\n\n`);
     } catch(e) {
       console.error(e);
       process.exit(1);
@@ -139,7 +139,7 @@ async function addRole() {
       const queryString = 'INSERT INTO roles(title, salary, department_id) VALUES (?, ?, ?)';
       const response = await db.query(queryString, [roleName, salary, getDepartmentId[0].department_id]);
       console.log(response);
-      console.log(`\n\n---------New Role Added!--------------\n\n`);
+      console.log(`\n\n---------${roleName} has been added to roles!--------------\n\n`);
     } catch(e) {
       console.error(e);
       process.exit(1);
@@ -207,7 +207,7 @@ async function addEmployee() {
       const queryString = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
       const response = db.query(queryString, [firstName, lastName, roleId, managerId]);
       console.log(response);
-      console.log(`\n\n---------New Employee Added!--------------\n\n`);
+      console.log(`\n\n---------New Employee ${firstName} ${lastName} Added!--------------\n\n`);
       } catch(e) {
         console.error(e);
         process.exit(1);
@@ -217,3 +217,34 @@ async function addEmployee() {
   });
 }
 
+async function updateEmployeeRole() {
+  const getEmployeeNames = `SELECT CONCAT(first_name, ' ',last_name) AS name FROM employee`;
+  const empObjArr = await db.query(getEmployeeNames);
+  const nameList = [];
+  for (let i =0; i < empObjArr[0].length; i++) {
+    nameList.push(empObjArr[0][i].name);
+  }
+  
+  const getAllRoles = `SELECT * FROM roles`;
+  const rolesObjArr = await db.query(getAllRoles);
+  const titleList = [];
+  for (let i = 0; i < rolesObjArr[0].length; i++) {
+    titleList.push(rolesObjArr[0][i].title);
+  }
+  
+  inquirer.prompt([
+    {
+      type: 'list',
+      message: `Which employee's role do you want to update?`,
+      name: 'emp_to_update',
+      choices: nameList
+    }, {
+      type: 'list',
+      message: `Which role do you want to assign the selected employee?`,
+      name: 'new_role',
+      choices: titleList
+    }
+  ]).then(async ({emp_to_update, new_role}) => {
+      
+  });
+}
