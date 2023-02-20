@@ -218,7 +218,7 @@ async function addEmployee() {
 }
 
 async function updateEmployeeRole() {
-  const getEmployeeNames = `SELECT CONCAT(first_name, ' ',last_name) AS name FROM employee`;
+  const getEmployeeNames = `SELECT CONCAT(first_name, ' ',last_name) AS name, employee_id As id FROM employee`;
   const empObjArr = await db.query(getEmployeeNames);
   const nameList = [];
   for (let i =0; i < empObjArr[0].length; i++) {
@@ -231,7 +231,7 @@ async function updateEmployeeRole() {
   for (let i = 0; i < rolesObjArr[0].length; i++) {
     titleList.push(rolesObjArr[0][i].title);
   }
-  
+
   inquirer.prompt([
     {
       type: 'list',
@@ -245,6 +245,40 @@ async function updateEmployeeRole() {
       choices: titleList
     }
   ]).then(async ({emp_to_update, new_role}) => {
+      let idToUpdate;
+      for (let i = 0; i < empObjArr[0].length; i++) {
+        if (emp_to_update === empObjArr[0][i].name) {
+          idToUpdate = empObjArr[0][i].id;
+        }
+      }
       
+      let newRoleId;
+      let newDepId;
+      for (let i = 0; i < rolesObjArr[0].length; i++) {
+        if(new_role === rolesObjArr[0][i].title){
+          newRoleId = rolesObjArr[0][i].role_id;
+          newDepId = rolesObjArr[0][i].department_id;
+        }
+      }
+
+      const getAllManagers = `SELECT DISTINCT CONCAT(m.first_name, ' ', m.last_name) AS manager_name, m.employee_id, roles.role_id, department.department_name, department.department_id FROM employee e JOIN employee m ON e.manager_id = m.employee_id JOIN roles ON m.role_id = roles.role_id JOIN department ON roles.department_id = department.department_id`;
+      const managersObjArr = await db.query(getAllManagers);
+
+      let managerId;
+      for (let i = 0; i < managersObjArr[0].length; i++) {
+        if (newDepId === managersObjArr[0][i].department_id) {
+          managerId = managersObjArr[0][i].employee_id;
+        }
+      }
+
+      const queryString = `UPDATE employee SET role_id = ?, manager_id = ? WHERE employee_id = ?`;
+      await db.query(queryString, [newRoleId, managerId, idToUpdate]);
+
+      console.log(`\n\nUpdated Employee Role! \nEmployee: ${emp_to_update}\nNew Role:${new_role}\nNew Role Id: ${newRoleId}, \nNew Manager Id:${managerId}\n\n`);
+
+      initCMS();
+  }).catch((e) => {
+    console.error(e);
+    process.exit(1);
   });
 }
